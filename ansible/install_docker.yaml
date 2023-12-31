@@ -1,0 +1,50 @@
+---
+- hosts: on_demand_droplets
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: install docker env
+      ansible.builtin.apt:
+        name: 
+          - docker.io
+          - docker-compose
+        state: latest
+        update_cache: yes
+        install_recommends: no
+
+    - name: Add a new user
+      user:
+        name: "{{ myuser }}"
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+        comment: "summa"
+        password: "{{ '{{ pass }}' | password_hash('sha512') }}"
+        shell: /bin/bash
+        createhome: yes
+
+    - name: Add the user to sudoers
+      lineinfile:
+        dest: /etc/sudoers
+        line: "{{ myuser }} ALL=(ALL) NOPASSWD:ALL"
+        validate: 'visudo -cf %s'
+
+    # - name: Generate SSH Key
+    #   become: yes
+    #   become_user: "{{ myuser }}"
+    #   command: ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+    #   args:
+    #     creates: ~/.ssh/id_rsa  # Skip the task if the key already exists
+
+    - name: Copy authorized SSH key list from root
+      ansible.builtin.shell: cp /root/.ssh/authorized_keys /home/"{{ myuser }}"/.ssh/authorized_keys
+
+    - name: set permission for authorized SSH key list
+      ansible.builtin.file:
+        path: /home/{{ myuser }}/.ssh/authorized_keys
+        owner: "{{ myuser }}"
+        group: "{{ myuser }}"
+        mode: '0644'
+
+    - name: Add docker to user grp
+      ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
