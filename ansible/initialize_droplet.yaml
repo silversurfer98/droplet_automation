@@ -3,14 +3,9 @@
   become: yes
   gather_facts: true
   tasks:
-    - name: install docker env
-      ansible.builtin.apt:
-        name: 
-          - docker.io
-          - docker-compose
-        state: latest
-        update_cache: yes
-        install_recommends: no
+    - name: Include Encrypted Variables
+      include_vars:
+        file: secrets.yaml
 
     - name: Add a new user
       user:
@@ -46,5 +41,5 @@
         group: "{{ myuser }}"
         mode: '0644'
 
-    - name: Add docker to user grp
-      ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
+    # - name: Add docker to user grp
+    #   ansible.builtin.shell: usermod -aG docker "{{ myuser }}"

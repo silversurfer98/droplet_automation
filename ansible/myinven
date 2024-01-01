@@ -4,4 +4,3 @@ droplet.silver1618.fun
 [on_demand_droplets:vars]
 ansible_ssh_user=root
 myuser=raghav
-pass=aleIllaBellu

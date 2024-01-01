@@ -10,3 +10,6 @@ Host *.silver1618.fun
   User root
   LogLevel QUIET
 ```
+
+use this command to play
+ansible-playbook setup_tailscale.yaml --ask-vault-password
