@@ -38,11 +38,22 @@ provider "cloudflare" {
   api_key   = data.sops_file.secrets.data["cloudflare_api_key"]
 }
 
+# nyc1    New York 1     
+# sgp1    Singapore 1    
+# lon1    London 1       
+# nyc3    New York 3     
+# ams3    Amsterdam 3    
+# fra1    Frankfurt 1    
+# tor1    Toronto 1      
+# sfo2    San Francisco 2
+# blr1    Bangalore 1    
+# sfo3    San Francisco 3
+# syd1    Sydney 1    
 
 # DigitalOcean Droplet
 resource "digitalocean_droplet" "on-demand-droplet" {
   name   = "on-demand-droplet-terraform"
-  region = "blr1"
+  region = "ams3"
   size   = "s-1vcpu-1gb"
   image  = "ubuntu-23-04-x64"
   ssh_keys = [39466908, 39465090, 39465076, 38127015, 40522429] # run `doctl compute ssh-key list` to get numbers
