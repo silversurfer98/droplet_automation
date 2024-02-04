@@ -1,7 +1,7 @@
 ---
 - hosts: on_demand_droplets
   become: yes
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: Include Encrypted Variables
       include_vars:
@@ -16,17 +16,17 @@
         update_cache: yes
         install_recommends: no
 
-    # - name: Add docker to user grp
-    #   ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
+    - name: Add docker to user grp
+      ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
 
-    # - name: copy tailscale compose file for backup
-    #   copy:
-    #     src: ./docker-compose.yaml
-    #     dest: /home/{{ myuser }}/docker-compose.yaml
+    - name: copy tailscale compose file for backup
+      copy:
+        src: ./docker-compose.yaml
+        dest: /home/{{ myuser }}/docker-compose.yaml
 
     - name: Join my tailsclae network
-      # become: yes
-      # become_user: "{{ myuser }}"
+      become: yes
+      become_user: "{{ myuser }}"
       community.docker.docker_compose:
         project_name: tailscale
         definition:

@@ -13,3 +13,8 @@ Host *.silver1618.fun
 
 use this command to play
 ansible-playbook setup_tailscale.yaml --ask-vault-password
+
+
+## how to login so that discord notify works
+
+ssh -o IdentitiesOnly=yes raghav@droplet.silver1618.fun

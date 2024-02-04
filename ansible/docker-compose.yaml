@@ -15,7 +15,7 @@ services:
       - NET_RAW
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_EXTRA_ARGS=--login-server=https://o2j3zr86lbnkxla8fdb6.silver1618.fun/ --advertise-exit-node --advertise-routes=192.168.1.0/24 --accept-dns=true
+      - TS_EXTRA_ARGS=--login-server=https://change_me_here.silver1618.fun/ --advertise-exit-node --advertise-routes=192.168.1.0/24 --accept-dns=true
       - TS_NO_LOGS_NO_SUPPORT=true
-      - TS_AUTHKEY=0a3e9183ddb39da2104b0c52c51eba32596d452aa7403204  
+      - TS_AUTHKEY=change_me_here  
     restart: unless-stopped
