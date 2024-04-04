@@ -55,8 +55,8 @@ resource "digitalocean_droplet" "on-demand-droplet" {
   name   = "on-demand-droplet-terraform"
   region = "ams3"
   size   = "s-1vcpu-1gb"
-  image  = "ubuntu-23-04-x64"
-  ssh_keys = [39466908, 39465090, 39465076, 38127015, 40522429] # run `doctl compute ssh-key list` to get numbers
+  image  = "ubuntu-23-10-x64"
+  ssh_keys = [41493313, 41493296, 41493279, 39465090, 39465076] # run `doctl compute ssh-key list` to get numbers
   graceful_shutdown = false
   backups = false
   # monitoring = true

@@ -56,3 +56,7 @@
         cmd: source /home/{{ myuser }}/.zshrc
       vars:
         ansible_shell_executable: /bin/zsh
+    
+    - name: Change shell to ZSH
+      ansible.builtin.shell:
+        cmd: chsh -s $(which zsh)
