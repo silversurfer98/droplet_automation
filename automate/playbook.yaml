@@ -1,0 +1,34 @@
+---
+- name: setup_zsh
+  hosts: all
+  become: true
+  # vars_prompt:
+  #   - name: myuser
+  #     prompt: "Enter the username"
+  #     default: "rags"
+  #     private: false
+  roles:
+    - initialize_droplet
+    - setup_zsh
+
+# ---
+# - name: Main Playbook
+#   hosts: all
+#   become: true
+
+#   vars_prompt:
+#     - name: role_choice
+#       prompt: "Choose a role to run (1 - setup_zsh, 2 - initialize_droplet)"
+#       private: false
+#       default: "1"
+
+#   tasks:
+#     - name: Run setup_zsh role
+#       include_role:
+#         name: setup_zsh
+#       when: role_choice == "1"
+
+#     - name: Run initialize_droplet role
+#       include_role:
+#         name: initialize_droplet
+#       when: role_choice == "2"

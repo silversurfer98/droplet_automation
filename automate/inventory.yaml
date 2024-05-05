@@ -1,0 +1,8 @@
+---
+digital_ocean:
+  hosts:
+    on_demand_droplets:
+      ansible_host: droplet.silver1618.fun
+      ansible_user: 'root'
+      ansible_become: true
+      ansible_become_method: sudo

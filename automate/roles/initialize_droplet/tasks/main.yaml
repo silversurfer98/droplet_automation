@@ -1,0 +1,71 @@
+---
+- name: Add a new user
+  user:
+    name: "{{ myuser }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+    comment: "summa"
+    password: "{{ '{{ pass }}' | password_hash('sha512') }}"
+    shell: /bin/bash
+    createhome: yes
+
+- name: Add the user to sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    line: "{{ myuser }} ALL=(ALL) NOPASSWD:ALL"
+    validate: 'visudo -cf %s'
+
+- name: Copy authorized SSH key list from root
+  ansible.builtin.shell: cp /root/.ssh/authorized_keys /home/"{{ myuser }}"/.ssh/authorized_keys
+
+- name: set permission for authorized SSH key list
+  ansible.builtin.file:
+    path: /home/{{ myuser }}/.ssh/authorized_keys
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+    mode: '0644'
+
+- name: harden SSH
+  lineinfile: 
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - {regexp: '^#?AuthenticationMethods', line: 'AuthenticationMethods publickey'}
+    - {regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no'}
+    - {regexp: '^#?ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no'}
+    - {regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes'}
+    - {regexp: '^#?UsePAM', line: 'UsePAM yes'}
+
+- name: Create login_notifier
+  become_user: "{{ myuser }}"
+  become: yes
+  file:
+    path: /home/{{ myuser }}/login_notifier
+    state: touch
+    mode: '0755'
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+
+- name: Write content to the file
+  become_user: "{{ myuser }}"
+  become: yes
+  lineinfile:
+    path: /home/{{ myuser }}/login_notifier
+    line: "{{ item }}"
+  loop:
+    - "#!/bin/bash"
+    - "WEBHOOK_URL={{ discord_hook }}"
+    - "HOSTNAME=$(hostname -f)"
+    - "DATE=\"$(date +\"%d.%b.%Y -- %H:%M\")\""
+    - "MESSAGE=\"**$PAM_USER** did action: '**$PAM_TYPE**' at _$DATE on __$HOSTNAME from IP: \\`$PAM_RHOST\\`\""
+    - "data='{\"content\":\"'\"${MESSAGE}\"'\",\"tts\":false}'"
+    - "curl -X POST \"$WEBHOOK_URL\" -H \"Content-Type:application/json\" --data \"$data\""
+
+- name: add login_notifier to PAM file
+  lineinfile:
+    path: /etc/pam.d/sshd
+    insertafter: "EOF"
+    line: "session  optional  pam_exec.so  /home/{{ myuser }}/login_notifier"
