@@ -39,9 +39,21 @@
     - {regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes'}
     - {regexp: '^#?UsePAM', line: 'UsePAM yes'}
 
+- name: install docker
+  ansible.builtin.apt:
+    name: 
+      - docker.io
+      - docker-compose
+    state: latest
+    update_cache: yes
+    install_recommends: no
+
+- name: Add docker to user grp
+  ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
+
 - name: Create login_notifier
   become_user: "{{ myuser }}"
-  become: yes
+  become: true
   file:
     path: /home/{{ myuser }}/login_notifier
     state: touch
@@ -51,7 +63,7 @@
 
 - name: Write content to the file
   become_user: "{{ myuser }}"
-  become: yes
+  become: true
   lineinfile:
     path: /home/{{ myuser }}/login_notifier
     line: "{{ item }}"
