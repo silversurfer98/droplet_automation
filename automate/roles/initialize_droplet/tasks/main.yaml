@@ -1,4 +1,5 @@
 ---
+- include_vars: ../../../common/common_vars.yaml
 - name: Add a new user
   user:
     name: "{{ myuser }}"

@@ -1,4 +1,5 @@
 ---
+- include_vars: ../../../common/common_vars.yaml
 - name: install env
   ansible.builtin.apt:
     name: 
@@ -11,12 +12,14 @@
     update_cache: yes
     install_recommends: no
 
+# this is not idempotency, need to update
 - name: Create fonts direcory
   become: true
   become_user: "{{ myuser }}"
   ansible.builtin.command: mkdir /home/{{ myuser }}/.fonts/
   ignore_errors: true
 
+# i think its idem
 - name: Download Firacode fonts
   become: true
   become_user: "{{ myuser }}"
@@ -26,6 +29,7 @@
     remote_src: yes
     validate_certs: false
 
+# this is not idempotency, need to update
 - name: Clone my zsh files
   become: true
   become_user: "{{ myuser }}"

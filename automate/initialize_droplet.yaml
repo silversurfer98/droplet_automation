@@ -1,6 +1,6 @@
 ---
 - name: setup_zsh
-  hosts: all
+  hosts: digital_ocean
   become: true
   # vars_prompt:
   #   - name: myuser
