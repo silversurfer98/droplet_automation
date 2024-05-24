@@ -15,11 +15,6 @@ terraform {
   }
 }
 
-# locals {
-#   config_content = file("${path.module}/secrets.yaml")
-#   config = yamldecode(local.config_content)
-# }
-
 provider "sops" {}
 
 data "sops_file" "secrets" {
@@ -27,13 +22,10 @@ data "sops_file" "secrets" {
 }
 
 provider "digitalocean" {
-  # token = local.config.digitalocean_dev_board
   token = data.sops_file.secrets.data["digitalocean_dev_board"]
 }
 
 provider "cloudflare" {
-  # email     = local.config.cloudflare_email
-  # api_key   = local.config.cloudflare_api_key
   email     = data.sops_file.secrets.data["cloudflare_email"]
   api_key   = data.sops_file.secrets.data["cloudflare_api_key"]
 }
@@ -72,11 +64,26 @@ resource "digitalocean_droplet" "on-demand-droplet" {
 
 # Cloudflare DNS record
 resource "cloudflare_record" "on-demand-droplet-record" {
-  # zone_id = local.config.cloudflare_zone_id  # You can find this in your Cloudflare dashboard
   zone_id = data.sops_file.secrets.data["cloudflare_zone_id"]
   name    = "droplet"
   value   = digitalocean_droplet.on-demand-droplet.ipv4_address
   type    = "A"
   proxied = false
   ttl     = 1  # You can adjust the TTL as needed
+}
+
+# set values to env like this to run local shell commands
+resource "null_resource" "notify_discord" {
+  triggers = {
+    discord_webhook_url = data.sops_file.secrets.data["discord_webhook_url"]
+  }
+
+# run a curl command locally
+  provisioner "local-exec" {
+    when    = destroy
+    command = "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"Droplet has been destroyed!\"}' $DISCORD_WEBHOOK_URL"
+    environment = {
+      DISCORD_WEBHOOK_URL = self.triggers.discord_webhook_url
+    }
+  }
 }

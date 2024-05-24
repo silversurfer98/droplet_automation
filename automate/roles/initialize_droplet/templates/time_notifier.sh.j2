@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Get the uptime in hours
+uptime_hours=$(awk '{print $1/60/60}' /proc/uptime)
+
+# Check if the uptime is more than 3 hours
+if (( $(echo "$uptime_hours > 1" | bc -l) )); then
+  # Send a message to Discord
+  curl -H "Content-Type: application/json" \
+       -X POST \
+       -d '{"content":"Droplet has been running for more than 3 hours"}' \
+       {{ discord_hook }}
+fi

@@ -1,0 +1,7 @@
+#!/bin/bash
+WEBHOOK_URL={{ discord_hook }}
+HOSTNAME=$(hostname -f)
+DATE=$(date +"%d.%b.%Y -- %H:%M")
+MESSAGE="**$PAM_USER** did action: '**$PAM_TYPE**' at _$DATE on __$HOSTNAME from IP: `$PAM_RHOST`"
+data='{"content":"'"$MESSAGE"'","tts":false}'
+curl -X POST "$WEBHOOK_URL" -H "Content-Type:application/json" --data "$data"

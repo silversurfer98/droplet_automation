@@ -12,14 +12,15 @@
     update_cache: yes
     install_recommends: no
 
-# this is not idempotency, need to update
 - name: Create fonts direcory
   become: true
   become_user: "{{ myuser }}"
-  ansible.builtin.command: mkdir /home/{{ myuser }}/.fonts/
   ignore_errors: true
+  file:
+    path: /home/{{ myuser }}/.fonts
+    state: directory
+  # ansible.builtin.command: mkdir /home/{{ myuser }}/.fonts/
 
-# i think its idem
 - name: Download Firacode fonts
   become: true
   become_user: "{{ myuser }}"
@@ -29,34 +30,51 @@
     remote_src: yes
     validate_certs: false
 
-# this is not idempotency, need to update
-- name: Clone my zsh files
-  become: true
-  become_user: "{{ myuser }}"
-  shell: git clone https://github.com/silversurfer98/zsh_setup.git /home/{{ myuser }}/zsh_setup
+- name: Update font cache
+  ansible.builtin.command: fc-cache -fv
+  ignore_errors: true
 
 - name: Install starship
   become: true
   become_user: "{{ myuser }}"
   shell: curl -sS https://starship.rs/install.sh | sh -s -- -y
-- name: Do not count this as a failure
-  ansible.builtin.command: fc-cache -fv
-  ignore_errors: true
+
+- name: Clone my zsh repo
+  become: true
+  become_user: "{{ myuser }}"
+  git:
+    repo: https://github.com/silversurfer98/zsh_setup.git
+    dest: /home/{{ myuser }}/zsh_setup
+  # shell: git clone https://github.com/silversurfer98/zsh_setup.git /home/{{ myuser }}/zsh_setup
+
+
 
 - name: Copy configs
   become: true
   become_user: "{{ myuser }}"
-  shell: |
-    cp -Rf /home/{{ myuser }}/zsh_setup/.zsh /home/{{ myuser }}/
-    cp -Rf /home/{{ myuser }}/zsh_setup/.config /home/{{ myuser }}/
-    cp -f /home/{{ myuser }}/zsh_setup/.zshrc /home/{{ myuser }}/
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: 0755
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+    # recursive: yes
+  with_items:
+    - {src: '/home/{{ myuser }}/zsh_setup/.zsh', dest: '/home/{{ myuser }}/'}
+    - {src: '/home/{{ myuser }}/zsh_setup/.config', dest: '/home/{{ myuser }}/'}
+    - {src: '/home/{{ myuser }}/zsh_setup/.zshrc', dest: '/home/{{ myuser }}/'}
+  # shell: |
+  #   cp -Rf /home/{{ myuser }}/zsh_setup/.zsh /home/{{ myuser }}/
+  #   cp -Rf /home/{{ myuser }}/zsh_setup/.config /home/{{ myuser }}/
+  #   cp -f /home/{{ myuser }}/zsh_setup/.zshrc /home/{{ myuser }}/
 
-- name: Initialize ZSH
+- name: Initialize ZSHRC
   ansible.builtin.shell:
     cmd: source /home/{{ myuser }}/.zshrc
   vars:
     ansible_shell_executable: /bin/zsh
 
-- name: Change shell to ZSH
+- name: Change default shell to ZSH
   ansible.builtin.shell:
     cmd: chsh -s $(which zsh)

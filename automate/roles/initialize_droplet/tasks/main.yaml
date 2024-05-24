@@ -52,33 +52,62 @@
 - name: Add docker to user grp
   ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
 
+# - name: Create login_notifier
+#   become_user: "{{ myuser }}"
+#   become: true
+#   file:
+#     path: /home/{{ myuser }}/login_notifier
+#     state: touch
+#     mode: '0755'
+#     owner: "{{ myuser }}"
+#     group: "{{ myuser }}"
+
+# - name: Write content to login_notifier
+#   become_user: "{{ myuser }}"
+#   become: true
+#   lineinfile:
+#     path: /home/{{ myuser }}/login_notifier
+#     line: "{{ item }}"
+#   loop:
+#     - "#!/bin/bash"
+#     - "WEBHOOK_URL={{ discord_hook }}"
+#     - "HOSTNAME=$(hostname -f)"
+#     - "DATE=\"$(date +\"%d.%b.%Y -- %H:%M\")\""
+#     - "MESSAGE=\"**$PAM_USER** did action: '**$PAM_TYPE**' at _$DATE on __$HOSTNAME from IP: \\`$PAM_RHOST\\`\""
+#     - "data='{\"content\":\"'\"${MESSAGE}\"'\",\"tts\":false}'"
+#     - "curl -X POST \"$WEBHOOK_URL\" -H \"Content-Type:application/json\" --data \"$data\""
+
 - name: Create login_notifier
-  become_user: "{{ myuser }}"
-  become: true
-  file:
-    path: /home/{{ myuser }}/login_notifier
-    state: touch
-    mode: '0755'
+  template:
+    src: login_notifier.j2
+    dest: /home/{{ myuser }}/login_notifier
+    mode: 0755
     owner: "{{ myuser }}"
     group: "{{ myuser }}"
 
-- name: Write content to the file
+- name: Create time_notifier
+  template:
+    src: time_notifier.sh.j2
+    dest: /home/{{ myuser }}/time_notifier.sh
+    mode: 0755
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+
+- name: Add time_notifier to cron job
   become_user: "{{ myuser }}"
   become: true
-  lineinfile:
-    path: /home/{{ myuser }}/login_notifier
-    line: "{{ item }}"
-  loop:
-    - "#!/bin/bash"
-    - "WEBHOOK_URL={{ discord_hook }}"
-    - "HOSTNAME=$(hostname -f)"
-    - "DATE=\"$(date +\"%d.%b.%Y -- %H:%M\")\""
-    - "MESSAGE=\"**$PAM_USER** did action: '**$PAM_TYPE**' at _$DATE on __$HOSTNAME from IP: \\`$PAM_RHOST\\`\""
-    - "data='{\"content\":\"'\"${MESSAGE}\"'\",\"tts\":false}'"
-    - "curl -X POST \"$WEBHOOK_URL\" -H \"Content-Type:application/json\" --data \"$data\""
+  cron:
+    name: "time_notifier cron"
+    minute: "0"               # checks every hour
+    job: "/home/{{ myuser }}/time_notifier.sh"
 
 - name: add login_notifier to PAM file
   lineinfile:
     path: /etc/pam.d/sshd
     insertafter: "EOF"
     line: "session  optional  pam_exec.so  /home/{{ myuser }}/login_notifier"
+
+# - name: Restart SSHD service
+#   service:
+#     name: sshd
+#     state: restarted
