@@ -55,7 +55,7 @@ resource "digitalocean_droplet" "on-demand-droplet" {
   # region = var.region == "blr1" ? "blr1" :  var.region == "ams3" ? "ams3" : "Invalid region choice!"
   # region=var.region
   size   = "s-1vcpu-1gb"
-  image  = "ubuntu-24-04-x64"
+  image  = "ubuntu-22-04-x64"
   ssh_keys = [41493313, 41493296, 41493279, 39465090, 39465076] # run `doctl compute ssh-key list` to get numbers
   graceful_shutdown = false
   backups = false

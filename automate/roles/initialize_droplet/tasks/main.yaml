@@ -101,6 +101,36 @@
     minute: "0"               # checks every hour
     job: "/home/{{ myuser }}/time_notifier.sh"
 
+- name: check lcal/bin exists
+  become_user: "{{ myuser }}"
+  become: true
+  stat:
+    path: /home/{{ myuser }}/.local/bin
+  register: local_bin
+
+- name: create local/bin folder
+  become_user: "{{ myuser }}"
+  become: true
+  ansible.builtin.file:
+    path: /home/{{ myuser }}/.local/bin
+    state: directory
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+    mode: 0775
+  when: not local_bin.stat.exists
+
+- name: SOPS download and setup
+  become_user: "{{ myuser }}"
+  become: true
+  ansible.builtin.get_url:
+    url: https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64
+    dest: /home/{{ myuser }}/.local/bin/sops
+    mode: 0755
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+    validate_certs: false
+ 
+
 - name: add login_notifier to PAM file
   lineinfile:
     path: /etc/pam.d/sshd

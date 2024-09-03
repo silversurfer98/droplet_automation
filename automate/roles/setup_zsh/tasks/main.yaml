@@ -5,7 +5,8 @@
     name: 
       - tmux
       - zsh
-      - eza
+      - exa
+#      - eza
       - unzip
       - fontconfig
     state: latest
