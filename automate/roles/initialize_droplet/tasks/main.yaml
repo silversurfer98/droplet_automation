@@ -101,7 +101,7 @@
     minute: "0"               # checks every hour
     job: "/home/{{ myuser }}/time_notifier.sh"
 
-- name: check lcal/bin exists
+- name: check local/bin exists
   become_user: "{{ myuser }}"
   become: true
   stat:
@@ -129,7 +129,25 @@
     owner: "{{ myuser }}"
     group: "{{ myuser }}"
     validate_certs: false
- 
+
+- name: create age key file folder
+  become_user: "{{ myuser }}"
+  become: true
+  ansible.builtin.file:
+    path: /home/{{ myuser }}/.sops-key
+    state: directory
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+    mode: 0775  
+
+- name: bootstrap AGE key file
+  template:
+    src: age_file.j2
+    dest: /home/{{ myuser }}/.sops-key/key.txt
+    mode: 0755
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+
 
 - name: add login_notifier to PAM file
   lineinfile:

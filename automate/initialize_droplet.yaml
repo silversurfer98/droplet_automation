@@ -10,6 +10,7 @@
   roles:
     - initialize_droplet
     - setup_zsh
+    - setup_nvim
 
 # ---
 # - name: Main Playbook

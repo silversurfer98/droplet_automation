@@ -1,0 +1,66 @@
+---
+- include_vars: ../../../common/common_vars.yaml
+- name: Add neovim PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:neovim-ppa/unstable
+
+- name: install nvim
+  ansible.builtin.apt:
+    name: 
+      - neovim
+      - unzip
+      - fontconfig
+      - gcc
+    state: latest
+    update_cache: yes
+    install_recommends: no
+
+- name: check fonts exists
+  become_user: "{{ myuser }}"
+  become: true
+  stat:
+    path: /home/{{ myuser }}/.fonts
+  register: font_dir
+
+- name: Create fonts direcory
+  become: true
+  become_user: "{{ myuser }}"
+  ignore_errors: true
+  file:
+    path: /home/{{ myuser }}/.fonts
+    state: directory
+  when: not font_dir.stat.exists
+
+- name: Download Firacode fonts
+  become: true
+  become_user: "{{ myuser }}"
+  ansible.builtin.unarchive:
+    src: https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip
+    dest: /home/{{ myuser }}/.fonts/
+    remote_src: yes
+    validate_certs: false
+
+- name: Update font cache
+  ansible.builtin.command: fc-cache -fv
+  ignore_errors: true
+
+- name: Clone my zsh repo
+  become: true
+  become_user: "{{ myuser }}"
+  git:
+    repo: https://github.com/silversurfer98/zsh_setup.git
+    dest: /home/{{ myuser }}/zsh_setup
+
+- name: Copy configs
+  become: true
+  become_user: "{{ myuser }}"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: 0755
+    owner: "{{ myuser }}"
+    group: "{{ myuser }}"
+  with_items:
+    - {src: '/home/{{ myuser }}/zsh_setup/.config', dest: '/home/{{ myuser }}/'}
+
