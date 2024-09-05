@@ -14,6 +14,7 @@
       # - make
       - build-essential
       - rip-grep
+      - git
     state: latest
     update_cache: yes
     install_recommends: no
@@ -66,4 +67,8 @@
     group: "{{ myuser }}"
   with_items:
     - {src: '/home/{{ myuser }}/zsh_setup/.config', dest: '/home/{{ myuser }}/'}
+
+- name: set git username and ID
+  ansible.builtin.command: git config --global user.email "raghav@droplet.silver1618.xyz" && git config --global user.name "Droplet_user"
+  ignore_errors: true
 
