@@ -10,7 +10,10 @@
       - neovim
       - unzip
       - fontconfig
-      - gcc
+      # - gcc
+      # - make
+      - build-essential
+      - rip-grep
     state: latest
     update_cache: yes
     install_recommends: no
