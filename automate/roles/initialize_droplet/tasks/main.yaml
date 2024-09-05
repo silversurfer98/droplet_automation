@@ -1,5 +1,11 @@
 ---
 - include_vars: ../../../common/common_vars.yaml
+
+- name: Update the instance
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+
 - name: Add a new user
   user:
     name: "{{ myuser }}"
