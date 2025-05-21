@@ -51,12 +51,13 @@ variable "region" {
 # DigitalOcean Droplet
 resource "digitalocean_droplet" "on-demand-droplet" {
   name   = "on-demand-droplet-terraform"
-  region = var.region == "ind" ? "blr1" : "ams3"
+  # region = var.region == "ind" ? "blr1" : "ams3"
   # region = var.region == "blr1" ? "blr1" :  var.region == "ams3" ? "ams3" : "Invalid region choice!"
   # region=var.region
+  region = "ams3"
   size   = "s-1vcpu-1gb"
   image  = "ubuntu-22-04-x64"
-  ssh_keys = [41493313, 41493296, 41493279, 39465090, 39465076] # run `doctl compute ssh-key list` to get numbers
+  ssh_keys = [41493313, 41493296, 41493279, 39465076] # run `doctl compute ssh-key list` to get numbers
   graceful_shutdown = false
   backups = false
   # monitoring = true

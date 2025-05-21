@@ -1,0 +1,20 @@
+{
+  "server": {
+    "privateKey": "{{ interface_privatekey }}",
+    "publicKey": "{{ interface_pubkey }}",
+    "address": "10.8.0.1"
+  },
+  "clients": {
+    "b6804ea5-db17-484d-846a-622f4630b4ea": {
+      "id": "b6804ea5-db17-484d-846a-622f4630b4ea",
+      "name": "test_vpn",
+      "address": "10.8.0.2",
+      "privateKey": "{{ peer_privatekey }}",
+      "publicKey": "{{ peer_pubkey }}",
+      "preSharedKey": "{{ peer_presharedkey }}",
+      "createdAt": "2025-05-21T15:41:49.350Z",
+      "updatedAt": "2025-05-21T15:41:49.350Z",
+      "enabled": true
+    }
+  }
+}

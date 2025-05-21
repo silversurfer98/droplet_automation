@@ -1,0 +1,8 @@
+---
+- name: Setup an dev env
+  hosts: digital_ocean
+  become: true
+  roles:
+    - initialize_droplet
+    - setup_zsh
+    - setup_nvim

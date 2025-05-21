@@ -1,6 +1,7 @@
 ---
 - include_vars: ../../../common/common_vars.yaml
 
+# Some common updates
 - name: Update the instance
   ansible.builtin.apt:
     name: "*"
@@ -46,11 +47,12 @@
     - {regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes'}
     - {regexp: '^#?UsePAM', line: 'UsePAM yes'}
 
+# Docker setup
 - name: install docker
   ansible.builtin.apt:
     name: 
       - docker.io
-      - docker-compose
+      - docker-compose-v2
     state: latest
     update_cache: yes
     install_recommends: no
@@ -58,31 +60,7 @@
 - name: Add docker to user grp
   ansible.builtin.shell: usermod -aG docker "{{ myuser }}"
 
-# - name: Create login_notifier
-#   become_user: "{{ myuser }}"
-#   become: true
-#   file:
-#     path: /home/{{ myuser }}/login_notifier
-#     state: touch
-#     mode: '0755'
-#     owner: "{{ myuser }}"
-#     group: "{{ myuser }}"
-
-# - name: Write content to login_notifier
-#   become_user: "{{ myuser }}"
-#   become: true
-#   lineinfile:
-#     path: /home/{{ myuser }}/login_notifier
-#     line: "{{ item }}"
-#   loop:
-#     - "#!/bin/bash"
-#     - "WEBHOOK_URL={{ discord_hook }}"
-#     - "HOSTNAME=$(hostname -f)"
-#     - "DATE=\"$(date +\"%d.%b.%Y -- %H:%M\")\""
-#     - "MESSAGE=\"**$PAM_USER** did action: '**$PAM_TYPE**' at _$DATE on __$HOSTNAME from IP: \\`$PAM_RHOST\\`\""
-#     - "data='{\"content\":\"'\"${MESSAGE}\"'\",\"tts\":false}'"
-#     - "curl -X POST \"$WEBHOOK_URL\" -H \"Content-Type:application/json\" --data \"$data\""
-
+# Login notifier and Time notifier setup
 - name: Create login_notifier
   template:
     src: login_notifier.j2
@@ -90,6 +68,12 @@
     mode: 0755
     owner: "{{ myuser }}"
     group: "{{ myuser }}"
+
+- name: add login_notifier to PAM file
+  lineinfile:
+    path: /etc/pam.d/sshd
+    insertafter: "EOF"
+    line: "session  optional  pam_exec.so  /home/{{ myuser }}/login_notifier"
 
 - name: Create time_notifier
   template:
@@ -107,6 +91,7 @@
     minute: "0"               # checks every hour
     job: "/home/{{ myuser }}/time_notifier.sh"
 
+# SOPS Setup
 - name: check local/bin exists
   become_user: "{{ myuser }}"
   become: true
@@ -136,11 +121,12 @@
     group: "{{ myuser }}"
     validate_certs: false
 
+# Create the key file for SOPS
 - name: create age key file folder
   become_user: "{{ myuser }}"
   become: true
   ansible.builtin.file:
-    path: /home/{{ myuser }}/.sops-key
+    path: /home/{{ myuser }}/.sops-age
     state: directory
     owner: "{{ myuser }}"
     group: "{{ myuser }}"
@@ -149,17 +135,22 @@
 - name: bootstrap AGE key file
   template:
     src: age_file.j2
-    dest: /home/{{ myuser }}/.sops-key/key.txt
+    dest: /home/{{ myuser }}/.sops-age/key.txt
     mode: 0755
     owner: "{{ myuser }}"
     group: "{{ myuser }}"
 
+- name: Create the SOPS env variables and add to bashrc
+  become_user: "{{ myuser }}"
+  become: true
+  lineinfile: 
+    dest: /home/{{ myuser }}/.bashrc
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - {line: 'export SOPS_AGE_KEY_FILE=$HOME/.sops-age/key.txt'}
+    - {line: 'export SOPS_AGE_RECIPIENTS=$(cat $SOPS_AGE_KEY_FILE |grep -oP "public key: \K(.*)")'}
 
-- name: add login_notifier to PAM file
-  lineinfile:
-    path: /etc/pam.d/sshd
-    insertafter: "EOF"
-    line: "session  optional  pam_exec.so  /home/{{ myuser }}/login_notifier"
 
 # - name: Restart SSHD service
 #   service:

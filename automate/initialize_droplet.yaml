@@ -1,5 +1,5 @@
 ---
-- name: setup_zsh
+- name: Bare min droplet bootstrap
   hosts: digital_ocean
   become: true
   # vars_prompt:
@@ -9,8 +9,8 @@
   #     private: false
   roles:
     - initialize_droplet
-    - setup_zsh
-    - setup_nvim
+#    - setup_zsh
+#    - setup_nvim
 
 # ---
 # - name: Main Playbook

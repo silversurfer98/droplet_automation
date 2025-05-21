@@ -1,0 +1,41 @@
+---
+- include_vars: ../vars.yml
+- include_vars: ../../../common/common_vars.yaml
+
+- name: Create base service directory
+  file:
+    path: "/home/{{ myuser }}/vpn"
+    state: directory
+    mode: '0755'
+
+- name: Create conf directory
+  file:
+    path: "/home/{{ myuser }}/vpn/conf"
+    state: directory
+    mode: '0755'
+
+# - name: Copy docker-compose.yml to remote vendor folder
+#   copy:
+#     content: "{{ lookup('file', 'vendor/docker-compose.yml') }}"
+#     dest: "/home/{{ myuser }}/vpn/docker-compose.yml"
+#     mode: '0644'
+
+- name: Copy docker-compose.yml from vendor folder
+  copy:
+    src: "../vendor/docker-compose.yml"
+    dest: "/home/{{ myuser }}/vpn/docker-compose.yml"
+    mode: '0644'
+
+- name: Deploy config files to conf folder
+  template:
+    src: "{{ item.src }}"
+    dest: "/home/{{ myuser }}/vpn/{{ item.dest }}"
+    mode: '0644'
+  with_items:
+      - { src: "wg0.conf.j2", dest: "conf/wg0.conf" }
+      - { src: "wg0.json.j2", dest: "conf/wg0.json" }
+
+- name: start wireguard
+  command: docker compose up -d
+  args:
+    chdir: "/home/{{ myuser }}/vpn"

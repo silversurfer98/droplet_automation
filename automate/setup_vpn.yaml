@@ -1,0 +1,7 @@
+---
+- name: Setup a super vpn
+  hosts: digital_ocean
+  become: true
+  roles:
+    - initialize_droplet
+    - setup_wireguard

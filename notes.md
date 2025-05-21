@@ -1,4 +1,11 @@
-# configure sops
+## Pre startup
+
+Remove the host so that ansible works properly
+```bash
+ssh-keygen -f "/home/raghav/.ssh/known_hosts" -R "droplet.silver1618.xyz"
+```
+
+## configure sops
 
 - If u create age key, get the public from its
 - set that value to env variable
